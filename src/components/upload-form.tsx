@@ -1,14 +1,14 @@
 "use client";
 
+import Image from "next/image";
 import { useCallback, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { UploadCloud } from "lucide-react";
 
+import { CardBody, CardContainer, CardItem } from "@/components/ui/3d-card";
 import { GENERATION_PROGRESS_MESSAGES } from "@/lib/constants";
 import { createErrorId, logInfo } from "@/lib/logger";
 import { cn } from "@/lib/utils";
-
-import { PolaroidFrame } from "./polaroid-frame";
 
 type UploadFormProps = {
   pastRunCount: number;
@@ -131,26 +131,65 @@ export function UploadForm({ pastRunCount }: UploadFormProps) {
 
       <label
         htmlFor="portrait"
-        className={cn("block w-full", isPending ? "pointer-events-none opacity-60" : "cursor-pointer")}
+        className={cn(
+          "block w-full max-w-xl transition-opacity",
+          isPending ? "pointer-events-none opacity-60" : "cursor-pointer",
+        )}
       >
-        <PolaroidFrame
-          imageUrl={previewUrl ?? undefined}
-          placeholder={
-            <div className="flex flex-col items-center gap-3 text-center">
-              <UploadCloud className="h-10 w-10 text-black/50" aria-hidden="true" />
-              <div className="space-y-1">
-                <span className="block text-base font-medium text-black">
-                  Upload your image
-                </span>
-                <span className="block text-xs text-muted">
-                  Drop a portrait or click to browse
+        <CardContainer
+          containerClassName="!py-0 w-full"
+          className="w-full"
+        >
+          <CardBody
+            className={cn(
+              "group relative !h-[420px] !w-full max-w-xl overflow-visible rounded-[28px]",
+            )}
+          >
+            <CardItem
+              translateZ={60}
+              className="relative flex h-full !w-full flex-col overflow-hidden rounded-[28px] border border-white/25 bg-white/10 p-6 shadow-[0_35px_65px_-25px_rgba(15,23,42,0.55)] backdrop-blur-md transition-all duration-300"
+            >
+              <div className="relative flex-1 overflow-hidden rounded-[20px] border border-white/20 bg-black/40">
+                {previewUrl ? (
+                  <Image
+                    src={previewUrl}
+                    alt="Selected portrait preview"
+                    fill
+                    className="object-cover"
+                    sizes="(min-width: 1280px) 20vw, (min-width: 768px) 30vw, 90vw"
+                  />
+                ) : (
+                  <div className="flex h-full w-full flex-col items-center justify-center gap-3 px-10 text-center text-white/80">
+                    <UploadCloud className="h-11 w-11 text-white/70" aria-hidden="true" />
+                    <div className="space-y-1">
+                      <span className="block text-base font-medium text-white">
+                        Upload your image
+                      </span>
+                      <span className="block text-xs uppercase tracking-[0.24em] text-white/60">
+                        Drop a portrait or click to browse
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-6 flex items-center justify-between text-[11px] uppercase tracking-[0.28em] text-white/70">
+                <span>Time Capsule Ready</span>
+                <span className="text-white/60">
+                  {previewUrl ? "Replace photo" : "Select portrait"}
                 </span>
               </div>
-            </div>
-          }
-          className={cn("w-full", isPending && "pointer-events-none")}
-          footer={null}
-        />
+            </CardItem>
+
+            <CardItem
+              as="span"
+              translateZ={95}
+              className="pointer-events-none absolute right-6 top-6 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-[10px] font-medium uppercase tracking-[0.38em] text-white/70"
+            >
+              {isPending ? "Queuing" : "Drag & Drop"}
+            </CardItem>
+          </CardBody>
+        </CardContainer>
       </label>
 
       <div className="mt-6 flex flex-col gap-4">
