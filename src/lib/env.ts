@@ -1,22 +1,21 @@
-const REQUIRED_SERVER_ENV = [
-  "NEXT_PUBLIC_SUPABASE_URL",
-  "NEXT_PUBLIC_SUPABASE_ANON_KEY",
-  "SUPABASE_SERVICE_ROLE",
-  "GEMINI_API_KEY",
-  "GEMINI_MODEL",
-] as const;
+const SUPABASE_ENV = {
+  public: ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY"] as const,
+  server: ["NEXT_PUBLIC_SUPABASE_URL", "SUPABASE_SERVICE_ROLE"] as const,
+} as const;
 
-type RequiredEnvKey = (typeof REQUIRED_SERVER_ENV)[number];
+const GEMINI_ENV = ["GEMINI_API_KEY", "GEMINI_MODEL"] as const;
 
-function missingEnv(keys: RequiredEnvKey[]) {
+type RequiredEnvKey =
+  | (typeof SUPABASE_ENV.public)[number]
+  | (typeof SUPABASE_ENV.server)[number]
+  | (typeof GEMINI_ENV)[number];
+
+function missingEnv(keys: readonly RequiredEnvKey[]) {
   return keys.filter((key) => !process.env[key]);
 }
 
 export function assertServerEnv() {
-  const missing = missingEnv([
-    "NEXT_PUBLIC_SUPABASE_URL",
-    "SUPABASE_SERVICE_ROLE",
-  ]);
+  const missing = missingEnv(SUPABASE_ENV.server);
 
   if (missing.length) {
     throw new Error(
@@ -28,7 +27,7 @@ export function assertServerEnv() {
 }
 
 export function assertGeminiEnv() {
-  const missing = missingEnv(["GEMINI_API_KEY", "GEMINI_MODEL"]);
+  const missing = missingEnv(GEMINI_ENV);
 
   if (missing.length) {
     throw new Error(
@@ -40,10 +39,7 @@ export function assertGeminiEnv() {
 }
 
 export function isSupabaseConfigured() {
-  const missing = missingEnv([
-    "NEXT_PUBLIC_SUPABASE_URL",
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY",
-  ]);
+  const missing = missingEnv(SUPABASE_ENV.public);
   return missing.length === 0;
 }
 
@@ -54,4 +50,3 @@ export function getEnv(name: RequiredEnvKey) {
   }
   return value;
 }
-

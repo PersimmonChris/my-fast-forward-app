@@ -1,5 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 
+import type { Decade } from "@/types/generation";
+
 import { assertServerEnv, getEnv } from "./env";
 import { logInfo } from "./logger";
 
@@ -9,7 +11,7 @@ let cachedClient:
   | ReturnType<typeof createClient<Database>>
   | null = null;
 
-type Database = {
+export type Database = {
   public: {
     Tables: {
       generation_runs: {
@@ -36,13 +38,14 @@ type Database = {
         Update: Partial<
           Database["public"]["Tables"]["generation_runs"]["Insert"]
         >;
+        Relationships: [];
       };
       generation_outputs: {
         Row: {
           id: string;
           created_at: string;
           run_id: string;
-          decade: string;
+          decade: Decade;
           image_path: string | null;
           status: "pending" | "completed" | "failed";
           error_message: string | null;
@@ -51,7 +54,7 @@ type Database = {
           id: string;
           created_at?: string;
           run_id: string;
-          decade: string;
+          decade: Decade;
           image_path?: string | null;
           status?: "pending" | "completed" | "failed";
           error_message?: string | null;
@@ -59,11 +62,19 @@ type Database = {
         Update: Partial<
           Database["public"]["Tables"]["generation_outputs"]["Insert"]
         >;
+        Relationships: [
+          {
+            foreignKeyName: "generation_outputs_run_id_fkey";
+            columns: ["run_id"];
+            referencedRelation: "generation_runs";
+            referencedColumns: ["id"];
+          },
+        ];
       };
     };
-    Views: {};
-    Functions: {};
-    Enums: {};
+    Views: Record<string, never>;
+    Functions: Record<string, never>;
+    Enums: Record<string, never>;
   };
 };
 
@@ -93,4 +104,3 @@ export function getSupabaseServiceRoleClient() {
 
   return cachedClient;
 }
-

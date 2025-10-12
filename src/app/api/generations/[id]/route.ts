@@ -3,19 +3,39 @@ import { NextRequest, NextResponse } from "next/server";
 import { GENERATION_PROGRESS_MESSAGES, STORAGE_BUCKET } from "@/lib/constants";
 import { getEnv } from "@/lib/env";
 import { createErrorId, logError, logInfo } from "@/lib/logger";
-import { getSupabaseServiceRoleClient } from "@/lib/supabase-server";
+import {
+  getSupabaseServiceRoleClient,
+  type Database,
+} from "@/lib/supabase-server";
 
 const SCOPE = "api/generation";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+type GenerationRunRecord =
+  Database["public"]["Tables"]["generation_runs"]["Row"] & {
+    generation_outputs:
+      | Array<
+          Pick<
+            Database["public"]["Tables"]["generation_outputs"]["Row"],
+            | "id"
+            | "created_at"
+            | "decade"
+            | "status"
+            | "error_message"
+            | "image_path"
+          >
+        >
+      | null;
+  };
+
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { id: string } },
+  context: { params: Promise<{ id: string }> },
 ) {
   const supabase = getSupabaseServiceRoleClient();
-  const runId = params.id;
+  const { id: runId } = await context.params;
   const errorId = createErrorId(SCOPE, "GET");
 
   try {
@@ -25,7 +45,7 @@ export async function GET(
         "id, created_at, status, completed_images, error_message, last_progress_message, thumb_image_path, generation_outputs (id, created_at, decade, status, error_message, image_path)",
       )
       .eq("id", runId)
-      .single();
+      .single<GenerationRunRecord>();
 
     if (error || !data) {
       logError(SCOPE, errorId, error ?? new Error("Run not found"), { runId });
