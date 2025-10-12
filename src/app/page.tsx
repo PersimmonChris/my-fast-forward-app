@@ -1,5 +1,6 @@
 import { PastGenerations } from "@/components/past-generations";
 import { UploadForm } from "@/components/upload-form";
+import { FlipWords } from "@/components/ui/flip-words";
 import { fetchPastGenerations } from "@/lib/data";
 
 export default async function Home() {
@@ -11,8 +12,15 @@ export default async function Home() {
         <span className="text-xs uppercase tracking-[0.38em] text-muted">
           Time Capsule
         </span>
-        <h1 className="text-4xl font-light uppercase tracking-[0.16em] sm:text-5xl">
-          Reimagine your portrait
+        <h1 className="text-4xl font-light tracking-[0.08em] text-balance sm:text-5xl">
+          What would you have looked like in the{" "}
+          <span className="inline-flex items-baseline">
+            <FlipWords
+              words={["1970s", "1980s", "1990s"]}
+              className="px-0 text-muted"
+            />
+            <span>?</span>
+          </span>
         </h1>
         <p className="max-w-2xl text-sm text-muted sm:text-base">
           Upload a single photo and watch Gemini reinterpret you through the 70s,
