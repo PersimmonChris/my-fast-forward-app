@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse, unstable_after } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 
 import { GENERATION_DECADES, GENERATION_PROGRESS_MESSAGES, STORAGE_BUCKET } from "@/lib/constants";
 import { getEnv } from "@/lib/env";
@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    unstable_after(async () => {
+    after(async () => {
       await runGeneration({
         runId,
         baseImage: arrayBuffer,
