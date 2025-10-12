@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, unstable_after } from "next/server";
 
 import { GENERATION_DECADES, GENERATION_PROGRESS_MESSAGES, STORAGE_BUCKET } from "@/lib/constants";
 import { getEnv } from "@/lib/env";
@@ -11,6 +11,7 @@ import type { Decade } from "@/types/generation";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 const SCOPE = "api/generations";
 
@@ -118,10 +119,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    void scheduleGeneration({
-      runId,
-      baseImage: arrayBuffer,
-      mimeType: file.type,
+    unstable_after(async () => {
+      await runGeneration({
+        runId,
+        baseImage: arrayBuffer,
+        mimeType: file.type,
+      });
     });
 
     return NextResponse.json(
@@ -195,124 +198,121 @@ export async function GET(request: NextRequest) {
   });
 }
 
-type ScheduleOptions = {
+type RunGenerationOptions = {
   runId: string;
   baseImage: ArrayBuffer;
   mimeType: string;
 };
 
-async function scheduleGeneration(options: ScheduleOptions) {
-  setTimeout(async () => {
-    const supabase = getSupabaseServiceRoleClient();
-    const { runId, baseImage, mimeType } = options;
+async function runGeneration(options: RunGenerationOptions) {
+  const supabase = getSupabaseServiceRoleClient();
+  const { runId, baseImage, mimeType } = options;
 
-    logInfo(SCOPE, "Starting async generation", { runId });
+  logInfo(SCOPE, "Starting async generation", { runId });
 
-    try {
-      for (const [index, decade] of GENERATION_DECADES.entries()) {
+  try {
+    for (const [index, decade] of GENERATION_DECADES.entries()) {
+      await supabase
+        .from("generation_runs")
+        .update({
+          status: "processing",
+          last_progress_message: GENERATION_PROGRESS_MESSAGES[index],
+        })
+        .eq("id", runId);
+
+      try {
+        const generatedBuffer = await generateDecadePortrait({
+          baseImage,
+          mimeType,
+          decade,
+        });
+
+        const outputPath = outputImagePath(runId, decade);
+
+        const uploadResult = await supabase.storage
+          .from(STORAGE_BUCKET)
+          .upload(outputPath, generatedBuffer, {
+            contentType: "image/png",
+            upsert: true,
+          });
+
+        if (uploadResult.error) {
+          throw uploadResult.error;
+        }
+
+        const publicUrl = getPublicUrl(outputPath);
+
+        await supabase
+          .from("generation_outputs")
+          .update({
+            status: "completed",
+            image_path: outputPath,
+            error_message: null,
+          })
+          .eq("run_id", runId)
+          .eq("decade", decade);
+
         await supabase
           .from("generation_runs")
           .update({
-            status: "processing",
-            last_progress_message: GENERATION_PROGRESS_MESSAGES[index],
+            completed_images: index + 1,
+            thumb_image_path: index === 0 ? outputPath : undefined,
+            last_progress_message:
+              GENERATION_PROGRESS_MESSAGES[
+                Math.min(index + 1, GENERATION_PROGRESS_MESSAGES.length - 1)
+              ],
+            status:
+              index + 1 === GENERATION_DECADES.length ? "completed" : "processing",
           })
           .eq("id", runId);
 
-        try {
-          const generatedBuffer = await generateDecadePortrait({
-            baseImage,
-            mimeType,
-            decade,
-          });
+        logInfo(SCOPE, "Portrait stored", { runId, decade, publicUrl });
+      } catch (error) {
+        const errorId = createErrorId(SCOPE, decade);
 
-          const outputPath = outputImagePath(runId, decade);
+        logError(SCOPE, errorId, error, { runId, decade });
 
-          const uploadResult = await supabase.storage
-            .from(STORAGE_BUCKET)
-            .upload(outputPath, generatedBuffer, {
-              contentType: "image/png",
-              upsert: true,
-            });
+        await supabase
+          .from("generation_outputs")
+          .update({
+            status: "failed",
+            error_message: `Generation failed. errorId=${errorId}`,
+          })
+          .eq("run_id", runId)
+          .eq("decade", decade);
 
-          if (uploadResult.error) {
-            throw uploadResult.error;
-          }
+        await supabase
+          .from("generation_runs")
+          .update({
+            status: "failed",
+            error_message: `Generation failed for ${decade}. errorId=${errorId}`,
+            last_progress_message: `Generation stopped at ${decade}.`,
+          })
+          .eq("id", runId);
 
-          const publicUrl = getPublicUrl(outputPath);
-
-          await supabase
-            .from("generation_outputs")
-            .update({
-              status: "completed",
-              image_path: outputPath,
-              error_message: null,
-            })
-            .eq("run_id", runId)
-            .eq("decade", decade);
-
-          await supabase
-            .from("generation_runs")
-            .update({
-              completed_images: index + 1,
-              thumb_image_path: index === 0 ? outputPath : undefined,
-              last_progress_message:
-                GENERATION_PROGRESS_MESSAGES[
-                  Math.min(index + 1, GENERATION_PROGRESS_MESSAGES.length - 1)
-                ],
-              status:
-                index + 1 === GENERATION_DECADES.length ? "completed" : "processing",
-            })
-            .eq("id", runId);
-
-          logInfo(SCOPE, "Portrait stored", { runId, decade, publicUrl });
-        } catch (error) {
-          const errorId = createErrorId(SCOPE, decade);
-
-          logError(SCOPE, errorId, error, { runId, decade });
-
-          await supabase
-            .from("generation_outputs")
-            .update({
-              status: "failed",
-              error_message: `Generation failed. errorId=${errorId}`,
-            })
-            .eq("run_id", runId)
-            .eq("decade", decade);
-
-          await supabase
-            .from("generation_runs")
-            .update({
-              status: "failed",
-              error_message: `Generation failed for ${decade}. errorId=${errorId}`,
-              last_progress_message: `Generation stopped at ${decade}.`,
-            })
-            .eq("id", runId);
-
-          return;
-        }
+        return;
       }
-
-      await supabase
-        .from("generation_runs")
-        .update({
-          status: "completed",
-          last_progress_message:
-            GENERATION_PROGRESS_MESSAGES[GENERATION_PROGRESS_MESSAGES.length - 1],
-        })
-        .eq("id", runId);
-
-      logInfo(SCOPE, "Generation completed", { runId });
-    } catch (error) {
-      const errorId = createErrorId(SCOPE, "ASYNC");
-      logError(SCOPE, errorId, error, { runId });
-      await supabase
-        .from("generation_runs")
-        .update({
-          status: "failed",
-          error_message: `Unexpected background failure. errorId=${errorId}`,
-        })
-        .eq("id", runId);
     }
-  }, 0);
-}
 
+    await supabase
+      .from("generation_runs")
+      .update({
+        status: "completed",
+        last_progress_message:
+          GENERATION_PROGRESS_MESSAGES[GENERATION_PROGRESS_MESSAGES.length - 1],
+      })
+      .eq("id", runId);
+
+    logInfo(SCOPE, "Generation completed", { runId });
+  } catch (error) {
+    const errorId = createErrorId(SCOPE, "ASYNC");
+    logError(SCOPE, errorId, error, { runId });
+    await supabase
+      .from("generation_runs")
+      .update({
+        status: "failed",
+        error_message: `Unexpected background failure. errorId=${errorId}`,
+      })
+      .eq("id", runId);
+  }
+}
