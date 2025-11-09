@@ -1,7 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useMemo, useState, useTransition } from "react";
+import {
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 import { useRouter } from "next/navigation";
 import { UploadCloud } from "lucide-react";
 
@@ -16,33 +22,82 @@ type UploadFormProps = {
 
 export function UploadForm({ pastRunCount }: UploadFormProps) {
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [progressMessage, setProgressMessage] = useState<string | null>(null);
 
+  const handleFileSelection = useCallback(
+    (file: File | null, { syncInput = false }: { syncInput?: boolean } = {}) => {
+      setError(null);
+      setProgressMessage(null);
+
+      if (!file) {
+        setPreviewUrl((previous) => {
+          if (previous) {
+            URL.revokeObjectURL(previous);
+          }
+          return null;
+        });
+        if (syncInput && fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+        return;
+      }
+
+      if (!file.type.startsWith("image/")) {
+        setError("Please choose an image file.");
+        return;
+      }
+
+      setPreviewUrl((previous) => {
+        if (previous) {
+          URL.revokeObjectURL(previous);
+        }
+        return URL.createObjectURL(file);
+      });
+
+      if (syncInput && fileInputRef.current) {
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        fileInputRef.current.files = dataTransfer.files;
+      }
+    },
+    [],
+  );
+
   const onFileChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    setError(null);
-    setProgressMessage(null);
+    const file = event.target.files?.[0] ?? null;
+    handleFileSelection(file);
+  }, [handleFileSelection]);
 
-    if (!file) {
-      setPreviewUrl(null);
+  const onDropUpload = useCallback((event: React.DragEvent<HTMLLabelElement>) => {
+    event.preventDefault();
+    if (isPending) {
       return;
     }
+    const file = event.dataTransfer?.files?.[0] ?? null;
+    handleFileSelection(file, { syncInput: true });
+  }, [handleFileSelection, isPending]);
 
-    if (!file.type.startsWith("image/")) {
-      setError("Please choose an image file.");
-      return;
-    }
-
-    const url = URL.createObjectURL(file);
-    setPreviewUrl(url);
-  }, []);
+  const onDragOver = useCallback((event: React.DragEvent<HTMLLabelElement>) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = isPending ? "none" : "copy";
+  }, [isPending]);
 
   const resetState = useCallback(() => {
-    setPreviewUrl(null);
+    setPreviewUrl((previous) => {
+      if (previous) {
+        URL.revokeObjectURL(previous);
+      }
+      return null;
+    });
+    setError(null);
     setProgressMessage(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   }, []);
 
   const onSubmit = useCallback(
@@ -127,6 +182,7 @@ export function UploadForm({ pastRunCount }: UploadFormProps) {
         onChange={onFileChange}
         className="hidden"
         disabled={isPending}
+        ref={fileInputRef}
       />
 
       <label
@@ -135,6 +191,8 @@ export function UploadForm({ pastRunCount }: UploadFormProps) {
           "block w-full max-w-xl transition-opacity",
           isPending ? "pointer-events-none opacity-60" : "cursor-pointer",
         )}
+        onDrop={onDropUpload}
+        onDragOver={onDragOver}
       >
         <CardContainer
           containerClassName="!py-0 w-full"
@@ -181,13 +239,15 @@ export function UploadForm({ pastRunCount }: UploadFormProps) {
               </div>
             </CardItem>
 
-            <CardItem
-              as="span"
-              translateZ={95}
-              className="pointer-events-none absolute right-6 top-6 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-[10px] font-medium uppercase tracking-[0.38em] text-white/70"
-            >
-              {isPending ? "Queuing" : "Drag & Drop"}
-            </CardItem>
+            {!previewUrl ? (
+              <CardItem
+                as="span"
+                translateZ={95}
+                className="pointer-events-none absolute right-6 top-6 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-[10px] font-medium uppercase tracking-[0.38em] text-white/70"
+              >
+                {isPending ? "Queuing" : "Drag & Drop"}
+              </CardItem>
+            ) : null}
           </CardBody>
         </CardContainer>
       </label>
