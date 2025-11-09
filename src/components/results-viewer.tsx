@@ -181,9 +181,6 @@ export function ResultsViewer({ initialRun }: ResultsViewerProps) {
         >
           Back to Generate
         </Link>
-        <span className="text-xs text-muted">
-          Started at {new Date(run.created_at).toLocaleString()}
-        </span>
       </div>
     </section>
   );

@@ -63,10 +63,10 @@ export function PastGenerations({ totalCount, items }: PastGenerationsProps) {
               className="focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
             >
               <PolaroidFrame
-                label={new Date(item.created_at).toLocaleString()}
                 imageUrl={cover ?? undefined}
                 placeholder={<span className="text-xs">Awaiting postcard</span>}
                 hover
+                footer={null}
               />
             </Link>
           );
@@ -75,4 +75,3 @@ export function PastGenerations({ totalCount, items }: PastGenerationsProps) {
     </section>
   );
 }
-
