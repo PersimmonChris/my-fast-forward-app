@@ -248,7 +248,7 @@ export function UploadForm({ pastRunCount }: UploadFormProps) {
               <CardItem
                 as="span"
                 translateZ={95}
-                className="pointer-events-none absolute right-6 top-6 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-[10px] font-medium uppercase tracking-[0.38em] text-white/70"
+                className="pointer-events-none absolute right-6 top-8 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-[10px] font-medium uppercase tracking-[0.38em] text-[var(--color-neutral-200)]"
               >
                 {isPending ? "Queuing" : "Drag & Drop"}
               </CardItem>
