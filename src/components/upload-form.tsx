@@ -10,6 +10,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import { UploadCloud } from "lucide-react";
+import { Montserrat } from "next/font/google";
 
 import { CardBody, CardContainer, CardItem } from "@/components/ui/3d-card";
 import { GENERATION_PROGRESS_MESSAGES } from "@/lib/constants";
@@ -19,6 +20,11 @@ import { cn } from "@/lib/utils";
 type UploadFormProps = {
   pastRunCount: number;
 };
+
+const montserrat = Montserrat({
+  subsets: ["latin"],
+  weight: "600",
+});
 
 export function UploadForm({ pastRunCount }: UploadFormProps) {
   const router = useRouter();
@@ -231,8 +237,7 @@ export function UploadForm({ pastRunCount }: UploadFormProps) {
                 )}
               </div>
 
-              <div className="mt-6 flex items-center justify-between text-[11px] uppercase tracking-[0.28em] text-black/60">
-                <span>Time Capsule Ready</span>
+              <div className="mt-6 flex items-center justify-end text-[11px] uppercase tracking-[0.28em] text-black/60">
                 <span className="text-black/50">
                   {previewUrl ? "Replace photo" : "Select portrait"}
                 </span>
@@ -257,10 +262,11 @@ export function UploadForm({ pastRunCount }: UploadFormProps) {
           type="submit"
           disabled={isPending}
           className={cn(
-            "inline-flex items-center justify-center rounded-full border border-transparent bg-gradient-to-r from-[#bfe9ff] to-[#ff6e7f] px-8 py-3 text-sm font-medium uppercase tracking-[0.3em] text-black transition hover:opacity-90 focus:outline-none",
+            "inline-flex items-center justify-center rounded-full border border-transparent bg-gradient-to-r from-[#F37335] to-[#FDC830] px-8 py-3 text-sm font-semibold uppercase tracking-[0.15em] text-black transition hover:opacity-90 focus:outline-none",
+            montserrat.className,
             isPending ? "cursor-progress opacity-60" : "focus-ring",
           )}
-          style={{ backgroundColor: "#ff6e7f" }}
+          style={{ backgroundColor: "#FDC830" }}
         >
           {isPending ? "Queuing…" : "Generate"}
         </button>
