@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Download as DownloadIcon, Maximize2 } from "lucide-react";
+import { ArrowLeft, Download as DownloadIcon, Maximize2 } from "lucide-react";
 
 import {
   GENERATION_DECADES,
@@ -174,9 +174,10 @@ export function ResultsViewer({ initialRun }: ResultsViewerProps) {
       <div className="flex flex-col items-center gap-3 pt-6">
         <Link
           href="/"
-          className="inline-flex items-center justify-center rounded-full border border-transparent bg-gradient-to-r from-[#F37335] to-[#FDC830] px-12 py-3 text-sm font-semibold uppercase tracking-[0.26em] text-black transition hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-white"
+          className="inline-flex items-center justify-center gap-3 rounded-full border border-white bg-gradient-to-r from-[#F37335] to-[#FDC830] px-12 py-3 text-sm font-semibold uppercase tracking-[0.26em] text-black transition hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-white"
           style={{ backgroundColor: "#FDC830" }}
         >
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
           Back to Generate
         </Link>
       </div>

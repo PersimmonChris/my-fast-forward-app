@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 
 import { ResultsViewer } from "@/components/results-viewer";
 import { fetchGenerationRun } from "@/lib/data";
@@ -25,9 +26,10 @@ export default async function ResultPage({ params }: ResultPageProps) {
         </p>
         <Link
           href="/"
-          className="inline-flex items-center justify-center rounded-full border border-transparent bg-gradient-to-r from-[#F37335] to-[#FDC830] px-6 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-black transition hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+          className="inline-flex items-center justify-center gap-2 rounded-full border border-white bg-gradient-to-r from-[#F37335] to-[#FDC830] px-6 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-black transition hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
           style={{ backgroundColor: "#FDC830" }}
         >
+          <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
           Back to Generate
         </Link>
       </main>
