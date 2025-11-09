@@ -205,9 +205,9 @@ export function UploadForm({ pastRunCount }: UploadFormProps) {
           >
             <CardItem
               translateZ={60}
-              className="relative flex h-full !w-full flex-col overflow-hidden rounded-[28px] border border-white/25 bg-white/10 p-6 shadow-[0_35px_65px_-25px_rgba(15,23,42,0.55)] backdrop-blur-md transition-all duration-300"
+              className="relative flex h-full !w-full flex-col overflow-hidden rounded-[28px] border border-black/10 bg-white p-6 text-black shadow-[0_35px_65px_-25px_rgba(15,23,42,0.35)] transition-all duration-300"
             >
-              <div className="relative flex-1 overflow-hidden rounded-[20px] border border-white/20 bg-black/40">
+              <div className="relative flex-1 overflow-hidden rounded-[20px] border border-black/10 bg-black">
                 {previewUrl ? (
                   <Image
                     src={previewUrl}
@@ -231,9 +231,9 @@ export function UploadForm({ pastRunCount }: UploadFormProps) {
                 )}
               </div>
 
-              <div className="mt-6 flex items-center justify-between text-[11px] uppercase tracking-[0.28em] text-white/70">
+              <div className="mt-6 flex items-center justify-between text-[11px] uppercase tracking-[0.28em] text-black/60">
                 <span>Time Capsule Ready</span>
-                <span className="text-white/60">
+                <span className="text-black/50">
                   {previewUrl ? "Replace photo" : "Select portrait"}
                 </span>
               </div>
@@ -257,9 +257,10 @@ export function UploadForm({ pastRunCount }: UploadFormProps) {
           type="submit"
           disabled={isPending}
           className={cn(
-            "inline-flex items-center justify-center rounded-full border border-white/70 bg-white/5 px-8 py-3 text-sm font-medium uppercase tracking-[0.3em] text-white transition hover:bg-white hover:text-black focus:outline-none",
+            "inline-flex items-center justify-center rounded-full border border-transparent bg-gradient-to-r from-[#bfe9ff] to-[#ff6e7f] px-8 py-3 text-sm font-medium uppercase tracking-[0.3em] text-black transition hover:opacity-90 focus:outline-none",
             isPending ? "cursor-progress opacity-60" : "focus-ring",
           )}
+          style={{ backgroundColor: "#ff6e7f" }}
         >
           {isPending ? "Queuing…" : "Generate"}
         </button>
