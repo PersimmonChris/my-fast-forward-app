@@ -25,7 +25,8 @@ export default async function ResultPage({ params }: ResultPageProps) {
         </p>
         <Link
           href="/"
-          className="inline-flex items-center justify-center rounded-full border border-white/70 bg-white/5 px-6 py-2 text-xs font-medium uppercase tracking-[0.28em] text-white transition hover:bg-white hover:text-black focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+          className="inline-flex items-center justify-center rounded-full border border-transparent bg-gradient-to-r from-[#F37335] to-[#FDC830] px-6 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-black transition hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+          style={{ backgroundColor: "#FDC830" }}
         >
           Back to Generate
         </Link>
@@ -39,4 +40,3 @@ export default async function ResultPage({ params }: ResultPageProps) {
     </main>
   );
 }
-

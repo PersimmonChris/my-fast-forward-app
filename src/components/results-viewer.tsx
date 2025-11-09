@@ -106,9 +106,6 @@ export function ResultsViewer({ initialRun }: ResultsViewerProps) {
   return (
     <section className="w-full max-w-6xl space-y-10">
       <header className="space-y-4 text-center">
-        <span className="text-xs uppercase tracking-[0.38em] text-muted">
-          A Time Capsule
-        </span>
         <h1 className="text-4xl font-light uppercase tracking-[0.18em] sm:text-5xl">
           So how do you look?
         </h1>
@@ -177,7 +174,8 @@ export function ResultsViewer({ initialRun }: ResultsViewerProps) {
       <div className="flex flex-col items-center gap-3 pt-6">
         <Link
           href="/"
-          className="inline-flex items-center justify-center rounded-full border-2 border-white px-12 py-3 text-sm font-semibold uppercase tracking-[0.26em] text-white transition hover:bg-white hover:text-black focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          className="inline-flex items-center justify-center rounded-full border border-transparent bg-gradient-to-r from-[#F37335] to-[#FDC830] px-12 py-3 text-sm font-semibold uppercase tracking-[0.26em] text-black transition hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-white"
+          style={{ backgroundColor: "#FDC830" }}
         >
           Back to Generate
         </Link>
