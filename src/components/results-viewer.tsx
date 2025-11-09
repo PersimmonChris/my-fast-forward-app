@@ -109,7 +109,9 @@ export function ResultsViewer({ initialRun }: ResultsViewerProps) {
         <h1 className="text-4xl font-light uppercase tracking-[0.18em] sm:text-5xl">
           So how do you look?
         </h1>
-        <p className="text-sm text-muted sm:text-base">{progressMessage}</p>
+        {run.status !== "completed" ? (
+          <p className="text-sm text-muted sm:text-base">{progressMessage}</p>
+        ) : null}
       </header>
 
       {error ? (
