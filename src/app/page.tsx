@@ -3,6 +3,8 @@ import { UploadForm } from "@/components/upload-form";
 import { FlipWords } from "@/components/ui/flip-words";
 import { fetchPastGenerations } from "@/lib/data";
 
+export const revalidate = 0;
+
 export default async function Home() {
   const pastGenerations = await fetchPastGenerations();
 
